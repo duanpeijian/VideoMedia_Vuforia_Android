@@ -3,7 +3,7 @@
             Copyright (c) 2012-2014 Qualcomm Connected Experiences, Inc.
             All Rights Reserved.
 ============================================================================== -->
-<project name="VuforiaMedia" default="vuforiamedia">
+<project name="VuforiaMedia" default="vuforiamedia-NoNative">
 
     <!-- The local.properties file is created and updated by the 'android' tool.
          It contains the path to the SDK. It should *NOT* be checked into
@@ -103,6 +103,10 @@
 			<fileset dir="libs/armeabi-v7a"/>
 		</copy>
 	</target>  
+	
+	<target name="copy-unity-libs">
+		<copy file="VuforiaMedia.jar" todir="E:\stardust\github\MoTang_Unity\Assets\Plugins\Android/"/>
+	</target>
     
 	<target name="check_priv">
 		<condition property="is.priv.java">
@@ -135,6 +139,10 @@
     <target name="vuforiamedia" depends="-compile, -qcar-native-compile, -qcar-artifacts, copy-plugin-libs"
 	    description="Builds the VuforiaMedia native and java libraries">
     </target>	
+	
+	<target name="vuforiamedia-NoNative" depends="-compile, -qcar-artifacts, copy-unity-libs"
+		description="Builds the vuforiaMedia java libraries">
+	</target>
 	
     <!-- Deletes obj and lib folders that are not deleted by standard clean build -->
     <target name="-pre-clean" description="Deletes obj and lib folders">

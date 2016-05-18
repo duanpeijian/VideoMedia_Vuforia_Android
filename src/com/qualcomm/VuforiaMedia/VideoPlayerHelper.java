@@ -10,6 +10,10 @@ countries.
 
 package com.qualcomm.VuforiaMedia;
 
+import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -24,6 +28,7 @@ import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.os.Build;
+import android.os.Environment;
 import android.view.Surface;
 
 /** The main class for the VideoPlayer plugin. */
@@ -260,30 +265,39 @@ public class VideoPlayerHelper implements OnPreparedListener, OnBufferingUpdateL
                     else
                     {
                         // Get the asset file descriptor, if it exists
-                        AssetFileDescriptor afd = null;
-                        try
-                        {
-                            afd = mParentActivity.getAssets().openFd(filename);
-                        }
-                        catch(IOException e)
-                        {
-                            afd = null;
-                        }
+//                        AssetFileDescriptor afd = null;
+//                        try
+//                        {
+//                            afd = mParentActivity.getAssets().openFd(filename);
+//                        }
+//                        catch(IOException e)
+//                        {
+//                            afd = null;
+//                        }
+                    	
+                    	String localFileName = TryGetFilePath(filename);
 
                         try
                         {
                             mMediaPlayer = new MediaPlayer();
             
-                            if (afd != null)
-                            {
-                                mMediaPlayer.setDataSource(afd.getFileDescriptor(),afd.getStartOffset(),afd.getLength());
-                                afd.close();
+//                            if (afd != null)
+//                            {
+//                                mMediaPlayer.setDataSource(afd.getFileDescriptor(),afd.getStartOffset(),afd.getLength());
+//                                afd.close();
+//                            }
+//                            else
+//                            {
+//                                mMediaPlayer.setDataSource(filename);
+//                            }
+                            
+                            if(localFileName != null){
+                            	 mMediaPlayer.setDataSource(localFileName);
                             }
-                            else
-                            {
-                                mMediaPlayer.setDataSource(filename);
+                            else{
+                            	mMediaPlayer.setDataSource(filename);
                             }
-
+                            
                             Object argList[] = new Object[1];
                             argList[0] = mSurfaceTexture;
                             Surface surface = (Surface) _surfaceConstructor.newInstance(argList);
@@ -860,6 +874,34 @@ public class VideoPlayerHelper implements OnPreparedListener, OnBufferingUpdateL
         }
 
         return false;
+    }
+    
+    private String GetFilesDir(){
+    	File file = mParentActivity.getExternalFilesDir(null);
+    	if(file == null){
+    		file = mParentActivity.getFilesDir();
+    		DebugLog.LOGI(String.format("inner file dir: %s", file.getAbsolutePath()));
+    	}
+    	else{
+    		DebugLog.LOGI(String.format("external file dir: %s", file.getAbsolutePath()));
+    	}
+    	
+    	return file.getAbsolutePath();
+    }
+    
+    private String TryGetFilePath(String filename){
+    	String path = GetFilesDir();
+        String filePath = String.format("%s/%s", path, filename);
+        DebugLog.LOGI(String.format("filePath: %s", filePath));
+        
+        String ret = null;
+        
+        File file = new File(filePath);
+        if(file.exists()){
+        	ret = filePath;
+        }
+    	
+    	return ret;
     }
     
     /** Returns true if the file is located in the assets folder */
