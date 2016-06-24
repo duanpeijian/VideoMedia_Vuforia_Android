@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.media.MediaActionSound;
 import android.net.Uri;
 import android.os.Debug;
 import android.provider.MediaStore;
@@ -17,6 +19,7 @@ import com.unity3d.player.UnityPlayer;
 public class PhotoHelper {
 	
 	private static final int OPEN_CAMERA_CODE = 10;
+	private static final int OPEN_GALLERY_CODE = 11;
 	private static final int CROP_PHOTO_CODE = 12;
 	
 	static private PhotoHelper _instance = null;
@@ -75,7 +78,14 @@ public class PhotoHelper {
 		takePhoto(mParentActivity);
 	}
 	
-	private void cropPhoto(Uri uri){
+	public void openGallery(Activity context){
+		Intent intent = new Intent(Intent.ACTION_PICK);
+		intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
+		intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(tmpFile));
+		context.startActivityForResult(intent, OPEN_GALLERY_CODE);
+	}
+	
+	private void cropPhoto(Activity context, Uri uri){
 		Intent intent = new Intent("com.android.camera.action.CROP");
 		intent.setDataAndType(uri, "image/*");
         intent.putExtra("output", Uri.fromFile(tmpFile));
@@ -84,10 +94,10 @@ public class PhotoHelper {
         intent.putExtra("aspectY", 1);
         intent.putExtra("outputX", 300);
         intent.putExtra("outputY", 300);
-        mParentActivity.startActivityForResult(intent, CROP_PHOTO_CODE);
+        context.startActivityForResult(intent, CROP_PHOTO_CODE);
 	}
 	
-	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+	public void onActivityResult(Activity context, int requestCode, int resultCode, Intent data) {
 		DebugLog.LOGI("reach onActivityResult..");
 		
 		if(resultCode == Activity.RESULT_OK){
@@ -98,10 +108,14 @@ public class PhotoHelper {
 				switch(requestCode){
 				case OPEN_CAMERA_CODE:
 					filePath = tmpFile.getPath();
-					//cropPhoto(data.getData());
+					cropPhoto(context, Uri.fromFile(tmpFile));
+					break;
+				case OPEN_GALLERY_CODE:
+					filePath = getRealPathFromURI(context, data.getData());
+					cropPhoto(context, data.getData());
 					break;
 				case CROP_PHOTO_CODE:
-					filePath = data.getData().getPath();
+					filePath = tmpFile.getPath();
 					break;
 				}
 			}
@@ -113,8 +127,28 @@ public class PhotoHelper {
 			String args = String.format("%s&%s", statusId, filePath);
 			DebugLog.LOGI(String.format("GameObject: %s, args: %s", mGoName, args));
 			
-			//UnityPlayer.UnitySendMessage(mGoName, "AndroidCallback", args);
+			if(requestCode == CROP_PHOTO_CODE){
+				context.finish();
+				UnityPlayer.UnitySendMessage(mGoName, "AndroidCallback", args);
+			}
 		}
+		else{
+			context.finish();
+			String args = String.format("%s&%s", "-20", "null");
+			UnityPlayer.UnitySendMessage(mGoName, "AndroidCallback", args);
+		}
+	}
+	
+	public String getRealPathFromURI(Activity context, Uri contentUri) {
+	    String res = null;
+	    String[] proj = { MediaStore.Images.Media.DATA };
+	    Cursor cursor = context.getContentResolver().query(contentUri, proj, null, null, null);
+	    if(cursor.moveToFirst()){
+	       int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+	       res = cursor.getString(column_index);
+	    }
+	    cursor.close();
+	    return res;
 	}
 	
 	private File tmpFile;

@@ -26,6 +26,9 @@ public class PhotoProxyActivity extends Activity {
 		if(type.equals("1")){
 			m_photoHelper.takePhoto(this);
 		}
+		else if(type.equals("2")){
+			m_photoHelper.openGallery(this);
+		}
 	}
 	
 	@Override
@@ -35,9 +38,7 @@ public class PhotoProxyActivity extends Activity {
 		
 		DebugLog.LOGI("onActivityResult called..");
 		
-		m_photoHelper.onActivityResult(requestCode, resultCode, data);
-		
-		finish();
+		m_photoHelper.onActivityResult(this, requestCode, resultCode, data);
 	}
 	
 	@Override
