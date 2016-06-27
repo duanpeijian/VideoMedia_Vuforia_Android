@@ -10,24 +10,24 @@ public class PhotoProxyActivity extends Activity {
 	
 	private final String TAG = "PhotoProxyActivity";
 	
-	private PhotoHelper m_photoHelper;
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		
-		m_photoHelper = PhotoHelper.getInstance();
+		PhotoHelper m_photoHelper = PhotoHelper.Get();
 		
-		String type = this.getIntent().getStringExtra("type");
-		
-		DebugLog.LOGI(String.format("%s: type: %s", TAG, type));
-		
-		if(type.equals("1")){
-			m_photoHelper.takePhoto(this);
-		}
-		else if(type.equals("2")){
-			m_photoHelper.openGallery(this);
+		if(m_photoHelper != null){
+			String type = this.getIntent().getStringExtra("type");
+			
+			DebugLog.LOGI(String.format("%s: type: %s", TAG, type));
+			
+			if(type.equals("1")){
+				m_photoHelper.takePhoto(this);
+			}
+			else if(type.equals("2")){
+				m_photoHelper.openGallery(this);
+			}
 		}
 	}
 	
@@ -38,7 +38,13 @@ public class PhotoProxyActivity extends Activity {
 		
 		DebugLog.LOGI("onActivityResult called..");
 		
-		m_photoHelper.onActivityResult(this, requestCode, resultCode, data);
+		PhotoHelper m_photoHelper = PhotoHelper.Get();
+		if(m_photoHelper != null){
+			m_photoHelper.onActivityResult(this, requestCode, resultCode, data);
+		}
+		else{
+			finish();
+		}
 	}
 	
 	@Override

@@ -24,6 +24,10 @@ public class PhotoHelper {
 	
 	static private PhotoHelper _instance = null;
 	
+	static public PhotoHelper Get() {
+		return _instance;
+	}
+	
 	static public PhotoHelper getInstance() {
 		if(_instance == null){
 			_instance = new PhotoHelper();
@@ -63,9 +67,9 @@ public class PhotoHelper {
 	}
 	
 	public void fetchPhoto(String str){
-		Intent intent = new Intent(mParentActivity, PhotoProxyActivity.class);
-		intent.putExtra("type", str);
-		mParentActivity.startActivity(intent);
+		Intent startIntent = new Intent(mParentActivity, UnityService.class);
+		startIntent.putExtra("type", str);
+		mParentActivity.startService(startIntent);
 	}
 	
 	public void takePhoto(Activity context){
@@ -128,15 +132,21 @@ public class PhotoHelper {
 			DebugLog.LOGI(String.format("GameObject: %s, args: %s", mGoName, args));
 			
 			if(requestCode == CROP_PHOTO_CODE){
-				context.finish();
-				UnityPlayer.UnitySendMessage(mGoName, "AndroidCallback", args);
+				completeCallback(context, args);
 			}
 		}
 		else{
-			context.finish();
 			String args = String.format("%s&%s", "-20", "null");
-			UnityPlayer.UnitySendMessage(mGoName, "AndroidCallback", args);
+			
+			completeCallback(context, args);
 		}
+	}
+	
+	private void completeCallback(Activity context, String args){
+		context.finish();
+		UnityPlayer.UnitySendMessage(mGoName, "AndroidCallback", args);
+		Intent stopIntent = new Intent(context, UnityService.class);
+		context.stopService(stopIntent);
 	}
 	
 	public String getRealPathFromURI(Activity context, Uri contentUri) {
