@@ -70,6 +70,14 @@ public class PhotoHelper {
 		Intent startIntent = new Intent(mParentActivity, UnityService.class);
 		startIntent.putExtra("type", str);
 		mParentActivity.startService(startIntent);
+		
+		startActivity(mParentActivity, str);
+	}
+	
+	private void startActivity(Activity context, String str){
+		Intent myIntent = new Intent(context, PhotoProxyActivity.class);
+		myIntent.putExtra("type", str);
+		context.startActivity(myIntent);
 	}
 	
 	public void takePhoto(Activity context){
