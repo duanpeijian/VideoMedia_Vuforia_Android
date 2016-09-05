@@ -10,6 +10,8 @@ public class PhotoProxyActivity extends Activity {
 	
 	private final String TAG = "PhotoProxyActivity";
 	
+	private boolean need_chop = false;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
@@ -18,14 +20,15 @@ public class PhotoProxyActivity extends Activity {
 		PhotoHelper m_photoHelper = PhotoHelper.Get();
 		
 		if(m_photoHelper != null){
-			String type = this.getIntent().getStringExtra("type");
+			int type = this.getIntent().getIntExtra("type", 0);
+			need_chop = this.getIntent().getBooleanExtra("chop", false);
 			
-			DebugLog.LOGI(String.format("%s: type: %s", TAG, type));
+			DebugLog.LOGI(String.format("%s: type: %d", TAG, type));
 			
-			if(type.equals("1")){
+			if(type == 1){
 				m_photoHelper.takePhoto(this);
 			}
-			else if(type.equals("2")){
+			else if(type == 2){
 				m_photoHelper.openGallery(this);
 			}
 		}
@@ -40,7 +43,7 @@ public class PhotoProxyActivity extends Activity {
 		
 		PhotoHelper m_photoHelper = PhotoHelper.Get();
 		if(m_photoHelper != null){
-			m_photoHelper.onActivityResult(this, requestCode, resultCode, data);
+			m_photoHelper.onActivityResult(this, need_chop, requestCode, resultCode, data);
 		}
 		else{
 			finish();
