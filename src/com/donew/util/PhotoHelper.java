@@ -169,14 +169,23 @@ public class PhotoHelper {
 	}
 	
 	public String getRealPathFromURI(Activity context, Uri contentUri) {
+		DebugLog.LOGI(String.format("content url: %s", contentUri));
+		
 	    String res = null;
 	    String[] proj = { MediaStore.Images.Media.DATA };
 	    Cursor cursor = context.getContentResolver().query(contentUri, proj, null, null, null);
-	    if(cursor.moveToFirst()){
-	       int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-	       res = cursor.getString(column_index);
+	    if(cursor != null){
+	    	if(cursor.moveToFirst()){
+	 	       int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+	 	       res = cursor.getString(column_index);
+	 	    }
+	    	
+	    	cursor.close();
 	    }
-	    cursor.close();
+	    else{
+	    	res = contentUri.getPath();
+	    }
+	    
 	    return res;
 	}
 	
