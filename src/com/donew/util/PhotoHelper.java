@@ -5,11 +5,15 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images;
 
 import java.io.File;
+import java.io.FileOutputStream;
 
 import com.qualcomm.VuforiaMedia.DebugLog;
 import com.unity3d.player.UnityPlayer;
@@ -142,15 +146,19 @@ public class PhotoHelper {
 				DebugLog.LOGE("onActivityResult error");
 			}
 			
-			String args = String.format("%s&%s", statusId, filePath);
-			DebugLog.LOGI(String.format("GameObject: %s, args: %s", mGoName, args));
-			
 			if(chop){
 				if(requestCode == CROP_PHOTO_CODE){
+					String args = String.format("%s&%s", statusId, filePath);
+					DebugLog.LOGI(String.format("GameObject: %s, args: %s", mGoName, args));
 					completeCallback(context, args);
 				}
 			}
 			else{
+				//filePath = getImageThumbnail(filePath, 512, 512);
+				filePath = getImageThumbnail(filePath, 256, 256);
+				
+				String args = String.format("%s&%s", statusId, filePath);
+				DebugLog.LOGI(String.format("GameObject: %s, args: %s", mGoName, args));
 				completeCallback(context, args);
 			}
 		}
@@ -213,4 +221,41 @@ public class PhotoHelper {
     	
     	return file.getAbsolutePath();
     }
+	
+	private String getImageThumbnail(String imagePath, int width, int height){
+		Bitmap bitmap = null;
+		BitmapFactory.Options options = new BitmapFactory.Options();
+		options.inJustDecodeBounds = true;
+		bitmap = BitmapFactory.decodeFile(imagePath, options);
+		options.inJustDecodeBounds = false;
+		int h = options.outHeight;
+		int w = options.outWidth;
+		int beHeight = h / height;
+		int beWidth = w / width;
+		int be = 1;
+		if(beWidth > beHeight){
+			be = beWidth;
+		} else {
+			be = beHeight;
+		}
+		
+		if(be <= 1){
+			be = 1;
+		}
+		
+		options.inSampleSize = be;
+		bitmap = BitmapFactory.decodeFile(imagePath, options);
+		
+		//tmpFile.getParentFile();
+		
+		try{
+			FileOutputStream output = new FileOutputStream(tmpFile);
+			bitmap.compress(CompressFormat.PNG, 50, output);
+		}
+		catch(Exception e) {
+			DebugLog.LOGI(String.format("exception: %s", e));
+		}
+		
+		return tmpFile.getPath();
+	}
 }
