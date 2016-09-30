@@ -108,8 +108,8 @@ public class PhotoHelper {
         intent.putExtra("crop", true);
         intent.putExtra("aspectX", 1);
         intent.putExtra("aspectY", 1);
-        intent.putExtra("outputX", 300);
-        intent.putExtra("outputY", 300);
+        intent.putExtra("outputX", 128);
+        intent.putExtra("outputY", 128);
         context.startActivityForResult(intent, CROP_PHOTO_CODE);
 	}
 	
